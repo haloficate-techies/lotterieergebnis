@@ -4,6 +4,7 @@ export type ResultsItem = {
   pool: string;
   angka: string;
   result_date_raw: string;
+  result_date: string;
   effective_iso: string;
   digits: number;
 };
@@ -83,6 +84,7 @@ function normalizeItem(raw: unknown, index: number, fallbackIso: string): Result
     pool,
     angka,
     result_date_raw: resultDateRaw,
+    result_date: resultDateRaw,
     effective_iso: effectiveIso,
     digits: countDigits(angka),
   };

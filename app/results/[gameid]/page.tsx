@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Shell from "@/app/components/Shell";
 import { fetchResultsFromApi } from "@/lib/api";
+import { formatResultDate } from "@/lib/formatDate";
 
 type PageProps = {
   params: Promise<{ gameid: string }>;
@@ -11,9 +12,7 @@ export default async function GameDetailPage({ params }: PageProps) {
   const decodedGameId = decodeURIComponent(gameid);
 
   const data = await fetchResultsFromApi();
-  const gameItems = data.items.filter(
-    (item): item is typeof item & { result_date?: string } => item.gameid === decodedGameId,
-  );
+  const gameItems = data.items.filter((item) => item.gameid === decodedGameId);
   const latest = gameItems[0];
 
   if (!latest) {
@@ -21,7 +20,7 @@ export default async function GameDetailPage({ params }: PageProps) {
       <Shell>
         <h1 className="pageTitle">Game tidak ditemukan</h1>
         <Link href="/results" className="btn btnSecondary">
-          ? Kembali ke daftar game
+          &larr; Kembali ke daftar game
         </Link>
       </Shell>
     );
@@ -31,7 +30,7 @@ export default async function GameDetailPage({ params }: PageProps) {
     <Shell>
       <div style={{ marginBottom: 12 }}>
         <Link href="/results" className="btn btnSecondary">
-          ? Kembali ke daftar game
+          &larr; Kembali ke daftar game
         </Link>
       </div>
 
@@ -48,7 +47,7 @@ export default async function GameDetailPage({ params }: PageProps) {
           <span className="badge">{latest.digits}D</span>
         </div>
         <p className="muted" style={{ marginBottom: 0 }}>
-          Waktu terbaru: {latest.effective_iso}
+          Result date: {formatResultDate(latest.result_date || "-")}
         </p>
       </section>
 
@@ -58,21 +57,17 @@ export default async function GameDetailPage({ params }: PageProps) {
           <table className="table">
             <thead>
               <tr>
-                <th>Waktu</th>
                 <th>Result Date</th>
                 <th>Angka</th>
                 <th>Digit</th>
-                <th>Pool</th>
               </tr>
             </thead>
             <tbody>
               {gameItems.map((item) => (
                 <tr key={item.id}>
-                  <td>{item.effective_iso}</td>
-                  <td>{item.result_date || "-"}</td>
+                  <td>{formatResultDate(item.result_date || "-")}</td>
                   <td>{item.angka || "-"}</td>
                   <td>{item.digits}D</td>
-                  <td>{item.pool}</td>
                 </tr>
               ))}
             </tbody>

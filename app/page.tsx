@@ -1,25 +1,26 @@
-import Link from "next/link";
-import LatestCarousel from "@/app/components/LatestCarousel";
+import { Suspense } from "react";
+import HomePageClient from "@/app/components/HomePageClient";
+import HomePageSkeleton from "@/app/components/HomePageSkeleton";
 import Shell from "@/app/components/Shell";
 import { fetchResultsFromApi } from "@/lib/api";
+import { RESULTS_REFRESH_INTERVAL_SECONDS } from "@/lib/refreshInterval";
+
+async function HomeData() {
+  const data = await fetchResultsFromApi();
+  return (
+    <HomePageClient
+      initialData={data}
+      refreshIntervalSeconds={RESULTS_REFRESH_INTERVAL_SECONDS}
+    />
+  );
+}
 
 export default async function Home() {
-  const data = await fetchResultsFromApi();
-  const top = data.items.slice(0, 12);
-
   return (
     <Shell>
-      <h1 className="pageTitle">Lottery Results</h1>
-
-      <div style={{ marginBottom: 18 }}>
-        <Link href="/results" className="btn btnPrimary">
-          Lihat Semua Game
-        </Link>
-      </div>
-
-      <div className="card">
-        <LatestCarousel items={top} />
-      </div>
+      <Suspense fallback={<HomePageSkeleton />}>
+        <HomeData />
+      </Suspense>
     </Shell>
   );
 }
