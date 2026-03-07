@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import LatestCarousel from "@/app/components/LatestCarousel";
+import HomeSeoContent from "@/app/components/HomeSeoContent";
 import type { ResultsApiResponse } from "@/lib/results";
 
 const PREVIEW_LIMIT = 8;
@@ -42,11 +43,29 @@ function createDataSignature(data: ResultsApiResponse): string {
   return `${data.updated_at}|${data.count}|${firstId}`;
 }
 
+function resolveSourceDataLabel(): string | null {
+  const explicitLabel = process.env.NEXT_PUBLIC_RESULTS_SOURCE_LABEL?.trim();
+  if (explicitLabel) {
+    return explicitLabel;
+  }
+
+  const dummyMode = process.env.NEXT_PUBLIC_DUMMY_MODE?.trim().toLowerCase();
+  if (dummyMode === "true") {
+    return "Data Demo";
+  }
+  if (dummyMode === "false") {
+    return "Data Live";
+  }
+
+  return null;
+}
+
 export default function HomePageClient({
   initialData,
   refreshIntervalSeconds,
 }: HomePageClientProps) {
   const [data, setData] = useState<ResultsApiResponse>(initialData);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const inFlightRef = useRef(false);
   const currentSignatureRef = useRef(createDataSignature(initialData));
 
@@ -64,6 +83,9 @@ export default function HomePageClient({
       }
 
       inFlightRef.current = true;
+      if (!cancelled) {
+        setIsRefreshing(true);
+      }
       try {
         const response = await fetch("/api/results", {
           cache: "no-store",
@@ -82,6 +104,9 @@ export default function HomePageClient({
         console.error("Homepage auto-refresh failed", error);
       } finally {
         inFlightRef.current = false;
+        if (!cancelled) {
+          setIsRefreshing(false);
+        }
       }
     };
 
@@ -96,6 +121,7 @@ export default function HomePageClient({
   }, [refreshIntervalSeconds]);
 
   const top = useMemo(() => data.items.slice(0, 12), [data.items]);
+  const sourceDataLabel = useMemo(() => resolveSourceDataLabel(), []);
 
   const previewPools = useMemo(() => {
     const poolsFromPayload = data.pools
@@ -124,24 +150,39 @@ export default function HomePageClient({
   return (
     <>
       <section className="homeHero">
-        <h1 className="pageTitle">Lottery Results</h1>
+        <nav className="breadcrumb" aria-label="Breadcrumb">
+          <Link href="/">Beranda</Link>
+          <span className="breadcrumbSep">/</span>
+          <span aria-current="page">Hasil Lottery</span>
+        </nav>
+
+        <h1 className="pageTitle">Hasil Lottery Terbaru</h1>
+        <p className="homeHeroDesc">
+          Pantau hasil terbaru, lihat histori angka keluaran, dan jelajahi berbagai pool dalam
+          satu halaman.
+        </p>
 
         <Link href="/results" className="btn btnSecondary homeHeroCta">
-          Lihat Semua Pools
+          Lihat Semua Pool
         </Link>
       </section>
 
       <section className="homeSection card">
-        <LatestCarousel items={top} />
+        <LatestCarousel
+          items={top}
+          isRefreshing={isRefreshing}
+          dataSourceLabel={sourceDataLabel}
+          refreshIntervalSeconds={refreshIntervalSeconds}
+        />
       </section>
 
       <section className="homeSection card">
         <div className="rowBetween poolPreviewHeader">
           <h2 className="subTitle" style={{ margin: 0 }}>
-            Pools
+            Pool
           </h2>
           <Link href="/results" className="muted" style={{ fontWeight: 600 }}>
-            View All Results
+            Lihat Semua Hasil
           </Link>
         </div>
 
@@ -158,9 +199,11 @@ export default function HomePageClient({
         </div>
 
         <p className="muted poolPreviewNote">
-          Preview pools tersedia. Lihat halaman Results untuk daftar lengkap dan detail.
+          Pratinjau pool tersedia. Lihat halaman Hasil untuk daftar lengkap dan detail.
         </p>
       </section>
+
+      <HomeSeoContent />
     </>
   );
 }

@@ -2,9 +2,9 @@ export default function HomePageSkeleton() {
   return (
     <>
       <section className="homeHero">
-        <h1 className="pageTitle">Lottery Results</h1>
+        <h1 className="pageTitle">Hasil Lottery Terbaru</h1>
         <span className="btn btnSecondary homeHeroCta" aria-hidden="true">
-          Lihat Semua Pools
+          Lihat Semua Pool
         </span>
       </section>
 
@@ -12,7 +12,7 @@ export default function HomePageSkeleton() {
         <div className="carouselHeader">
           <h2 style={{ fontSize: 22, margin: 0 }}>Terbaru</h2>
           <div className="carouselHeaderRight">
-            <p className="carouselMeta muted">Updated: -</p>
+            <p className="carouselMeta muted">Diperbarui: -</p>
           </div>
         </div>
 
@@ -32,10 +32,10 @@ export default function HomePageSkeleton() {
       <section className="homeSection card">
         <div className="rowBetween poolPreviewHeader">
           <h2 className="subTitle" style={{ margin: 0 }}>
-            Pools
+            Pool
           </h2>
           <span className="muted" style={{ fontWeight: 600 }}>
-            View All Results
+            Lihat Semua Hasil
           </span>
         </div>
         <div className="poolChipsWrap" aria-hidden="true">
@@ -43,7 +43,7 @@ export default function HomePageSkeleton() {
             <span key={index} className="skeleton skeletonChip" />
           ))}
         </div>
-        <p className="muted poolPreviewNote">Preview pools tersedia.</p>
+        <p className="muted poolPreviewNote">Pratinjau pool tersedia.</p>
       </section>
     </>
   );

@@ -1,11 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
-import type { ResultsItem } from "@/lib/results";
+import { useMemo, useRef } from "react";
+import { formatResultDateCompact } from "@/lib/formatDate";
+import { parseGameidDisplay, toDigitBadgeValue, type ResultsItem } from "@/lib/results";
 
 type LatestCarouselProps = {
   items: Array<ResultsItem & { result_date?: string }>;
+  isRefreshing?: boolean;
+  dataSourceLabel?: string | null;
+  refreshIntervalSeconds?: number;
 };
 
 function toDateMs(value: string): number | null {
@@ -13,49 +17,12 @@ function toDateMs(value: string): number | null {
   return Number.isNaN(parsed) ? null : parsed;
 }
 
-function formatUpdatedMeta(value: string): string {
-  const raw = value?.trim() ?? "";
-  if (!raw || raw === "-") {
-    return raw || "-";
-  }
-
-  const isoLike = raw.includes("T") ? raw : raw.replace(" ", "T");
-  const parsed = new Date(isoLike);
-  if (Number.isNaN(parsed.getTime())) {
-    return raw;
-  }
-
-  const day = parsed.getDate();
-  const month = parsed.toLocaleString("en-US", { month: "short" });
-  const year = parsed.getFullYear();
-  const hours = String(parsed.getHours()).padStart(2, "0");
-  const minutes = String(parsed.getMinutes()).padStart(2, "0");
-
-  return `${day} ${month} ${year} \u2022 ${hours}:${minutes}`;
-}
-
-function formatCarouselDate(value: string): string {
-  const raw = value?.trim() ?? "";
-  if (!raw || raw === "-") {
-    return raw || "-";
-  }
-
-  const isoLike = raw.includes("T") ? raw : raw.replace(" ", "T");
-  const parsed = new Date(isoLike);
-  if (Number.isNaN(parsed.getTime())) {
-    return raw;
-  }
-
-  const day = parsed.getDate();
-  const month = parsed.toLocaleString("en-US", { month: "short" });
-  const year = parsed.getFullYear();
-  const hours = String(parsed.getHours()).padStart(2, "0");
-  const minutes = String(parsed.getMinutes()).padStart(2, "0");
-
-  return `\u{1F4C5} ${day} ${month} ${year} \u2022 ${hours}:${minutes}`;
-}
-
-export default function LatestCarousel({ items }: LatestCarouselProps) {
+export default function LatestCarousel({
+  items,
+  isRefreshing = false,
+  dataSourceLabel,
+  refreshIntervalSeconds,
+}: LatestCarouselProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const latestRaw = items.reduce<string>((best, item) => {
     const candidate = item.result_date || item.effective_iso || "";
@@ -72,6 +39,21 @@ export default function LatestCarousel({ items }: LatestCarouselProps) {
     }
     return candidateMs > bestMs ? candidate : best;
   }, "");
+  const latestFormatted = formatResultDateCompact(latestRaw || "-");
+  const headerMeta = useMemo(() => {
+    const segments: string[] = [];
+    if (dataSourceLabel && dataSourceLabel.trim()) {
+      segments.push(dataSourceLabel.trim());
+    }
+
+    segments.push(`Diperbarui ${latestFormatted}`);
+
+    if (typeof refreshIntervalSeconds === "number" && refreshIntervalSeconds > 0) {
+      segments.push(`Penyegaran ${refreshIntervalSeconds} detik`);
+    }
+
+    return segments.join(" | ");
+  }, [dataSourceLabel, latestFormatted, refreshIntervalSeconds]);
 
   const scrollByPage = (direction: "prev" | "next") => {
     const track = trackRef.current;
@@ -93,7 +75,15 @@ export default function LatestCarousel({ items }: LatestCarouselProps) {
       <div className="carouselHeader">
         <h2 style={{ fontSize: 22, margin: 0 }}>Terbaru</h2>
         <div className="carouselHeaderRight">
-          <p className="carouselMeta muted">Updated: {formatUpdatedMeta(latestRaw || "-")}</p>
+          <div className="carouselMetaWrap">
+            <p className="carouselMeta muted">{headerMeta}</p>
+            {isRefreshing ? (
+              <p className="carouselRefreshing" role="status" aria-live="polite">
+                <span className="carouselSpinner" aria-hidden="true" />
+                Memperbarui...
+              </p>
+            ) : null}
+          </div>
           <button
             type="button"
             onClick={() => scrollByPage("prev")}
@@ -126,53 +116,40 @@ export default function LatestCarousel({ items }: LatestCarouselProps) {
           WebkitOverflowScrolling: "touch",
         }}
       >
-        {items.map((item) => (
+        {items.map((item) => {
+          const { poolName, digitFromSuffix } = parseGameidDisplay(item.gameid);
+          const digitBadge =
+            toDigitBadgeValue(item.digits) ?? toDigitBadgeValue(digitFromSuffix);
+          const resultDate = item.result_date || item.effective_iso || "-";
+
+          return (
           <Link
             key={item.id}
             href={`/results/${encodeURIComponent(item.gameid)}`}
             className="carouselCardLink"
-            aria-label={`Lihat detail ${item.gameid}`}
+            aria-label={`Lihat detail ${poolName}`}
           >
-            <article
-              className="carouselResultCard"
-              style={{
-                border: "1px solid #d8d8d8",
-                borderRadius: 8,
-                padding: 12,
-                background: "#fff",
-              }}
-            >
-              <p style={{ fontWeight: 700, marginBottom: 6 }}>{item.gameid}</p>
+            <article className="carouselResultCard">
+              <div className="carouselCardHead">
+                <p className="carouselPoolName">{poolName}</p>
+                {digitBadge ? <span className="badge carouselDigitBadge">{digitBadge}</span> : null}
+              </div>
+              <p className="carouselResultLabel muted">Hasil Terbaru</p>
               <p
                 className="carouselResultNumber"
-                style={{
-                  fontSize: 42,
-                  fontWeight: 800,
-                  letterSpacing: 0.6,
-                  lineHeight: 1.05,
-                  margin: "8px 0 10px",
-                }}
               >
                 {item.angka || "-"}
               </p>
               <p
-                className="muted"
-                style={{
-                  marginTop: 12,
-                  marginBottom: 0,
-                  fontSize: 14,
-                  lineHeight: 1.35,
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
-                title={item.result_date || "-"}
+                className="muted carouselDate"
+                title={resultDate}
               >
-                {formatCarouselDate(item.result_date || "-")}
+                {formatResultDateCompact(resultDate)}
               </p>
             </article>
           </Link>
-        ))}
+          );
+        })}
       </div>
     </section>
   );

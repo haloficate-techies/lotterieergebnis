@@ -10,14 +10,14 @@ export default function Shell({ children }: ShellProps) {
       <header className="header">
         <div className="headerInner">
           <Link href="/" className="brand">
-            Lottery Results
+            Hasil Lottery
           </Link>
-          <nav className="nav" aria-label="Main navigation">
+          <nav className="nav" aria-label="Navigasi utama">
             <Link href="/" className="navLink">
-              Home
+              Beranda
             </Link>
             <Link href="/results" className="navLink">
-              Results
+              Hasil
             </Link>
           </nav>
         </div>

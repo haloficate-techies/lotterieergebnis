@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Lottery Results Website",
-  description: "Website hasil keluaran lotere dengan data dummy atau upstream API",
+  title: "Website Hasil Lottery",
+  description: "Website hasil keluaran lottery dengan data demo atau API upstream",
 };
 
 export default function RootLayout({

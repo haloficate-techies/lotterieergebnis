@@ -24,6 +24,18 @@ type GroupedGame = {
   items: ResultsItem[];
 };
 
+type ParsedGameidDisplay = {
+  poolName: string;
+  digitFromSuffix: number | null;
+};
+
+const POOL_DISPLAY_NAME_MAP: Record<string, string> = {
+  latolato: "Lalotato",
+  lalotato: "Lalotato",
+  xsmb: "XSMB",
+  pcso: "PCSO",
+};
+
 function asObject(value: unknown): Record<string, unknown> {
   if (typeof value === "object" && value !== null) {
     return value as Record<string, unknown>;
@@ -58,6 +70,68 @@ function toValidIso(input: string, fallbackIso: string): string {
 function countDigits(value: string): number {
   const matches = value.match(/\d/g);
   return matches ? matches.length : 0;
+}
+
+function toTitleCaseWord(word: string): string {
+  if (!word) {
+    return word;
+  }
+  return word[0].toUpperCase() + word.slice(1).toLowerCase();
+}
+
+function toHumanPoolName(rawPool: string): string {
+  const normalized = rawPool.trim().toLowerCase();
+  if (!normalized) {
+    return "Unknown";
+  }
+
+  const mapped = POOL_DISPLAY_NAME_MAP[normalized];
+  if (mapped) {
+    return mapped;
+  }
+
+  const words = normalized
+    .replace(/[_-]+/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (words.length === 0) {
+    return "Unknown";
+  }
+
+  return words.map(toTitleCaseWord).join(" ");
+}
+
+export function parseGameidDisplay(gameid: string): ParsedGameidDisplay {
+  const normalized = gameid.trim().toLowerCase();
+  if (!normalized) {
+    return {
+      poolName: "Unknown",
+      digitFromSuffix: null,
+    };
+  }
+
+  const suffixMatch = normalized.match(/(3|4|5)d$/);
+  const digitFromSuffix = suffixMatch ? Number(suffixMatch[1]) : null;
+
+  const withoutDigitSuffix = suffixMatch
+    ? normalized.slice(0, suffixMatch.index)
+    : normalized;
+
+  const withoutPrefix = withoutDigitSuffix.replace(/^toto/, "").trim();
+  const poolKey = withoutPrefix || normalized;
+
+  return {
+    poolName: toHumanPoolName(poolKey),
+    digitFromSuffix,
+  };
+}
+
+export function toDigitBadgeValue(digits: number | null | undefined): string | null {
+  if (digits === 3 || digits === 4 || digits === 5) {
+    return `${digits}D`;
+  }
+  return null;
 }
 
 function normalizeItem(raw: unknown, index: number, fallbackIso: string): ResultsItem {
