@@ -1,4 +1,5 @@
 import Link from "next/link";
+import FaqAccordion from "@/app/components/FaqAccordion";
 
 const POPULAR_POOLS = [
   { href: "/results/totolalotato3d", label: "Hasil Lalotato terbaru" },
@@ -60,40 +61,35 @@ export default function HomeSeoContent() {
 
       <section className="homeSection card seoLinksSection section-divider">
         <h2 className="subTitle">Jelajahi Pool Lottery</h2>
-        <p className="seoPoolListLabel">Pool yang tersedia:</p>
-        <div className="seoPoolList">
-          {AVAILABLE_POOLS.map((pool) => (
-            <Link key={pool.href} href={pool.href} className="seoPoolLink">
-              {pool.label}
-            </Link>
-          ))}
-        </div>
+        <p className="seoLinksIntro">Pilih pool yang ingin dilihat atau buka hasil yang paling sering dicari.</p>
+        <div className="seoLinksLayout">
+          <div className="seoLinksColumn">
+            <p className="seoPoolListLabel">Semua pool</p>
+            <div className="seoPoolList">
+              {AVAILABLE_POOLS.map((pool) => (
+                <Link key={pool.href} href={pool.href} className="seoPoolLink">
+                  {pool.label}
+                </Link>
+              ))}
+            </div>
+          </div>
 
-        <p className="seoSeeAlsoLabel">Link populer:</p>
-        <div className="seoLinksGrid">
-          {POPULAR_POOLS.map((pool) => (
-            <Link key={pool.href} href={pool.href} className="seoInternalLink">
-              {pool.label}
-            </Link>
-          ))}
+          <div className="seoLinksColumn">
+            <p className="seoSeeAlsoLabel">Link populer</p>
+            <div className="seoLinksGrid">
+              {POPULAR_POOLS.map((pool) => (
+                <Link key={pool.href} href={pool.href} className="seoInternalLink">
+                  {pool.label}
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
       <section className="homeSection card faqSection section-divider">
         <h2 className="subTitle">FAQ Hasil Lottery</h2>
-        <div className="faqList">
-          {FAQ_ITEMS.map((item) => (
-            <article key={item.question} className="faqItem">
-              <div className="faqQuestionRow">
-                <span className="faqIcon" aria-hidden="true">
-                  ❓
-                </span>
-                <h3 className="faqQuestion">{item.question}</h3>
-              </div>
-              <p className="faqAnswer">{item.answer}</p>
-            </article>
-          ))}
-        </div>
+        <FaqAccordion items={FAQ_ITEMS} />
       </section>
     </>
   );

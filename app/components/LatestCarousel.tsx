@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef } from "react";
+import { useRef } from "react";
 import { formatResultDateCompact } from "@/lib/formatDate";
 import { parseGameidDisplay, toDigitBadgeValue, type ResultsItem } from "@/lib/results";
 
@@ -17,10 +17,21 @@ function toDateMs(value: string): number | null {
   return Number.isNaN(parsed) ? null : parsed;
 }
 
+function formatTimeOnly(value: string): string {
+  const parsed = Date.parse(value);
+  if (Number.isNaN(parsed)) {
+    return "-";
+  }
+
+  const date = new Date(parsed);
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
+
 export default function LatestCarousel({
   items,
   isRefreshing = false,
-  dataSourceLabel,
   refreshIntervalSeconds,
 }: LatestCarouselProps) {
   const trackRef = useRef<HTMLDivElement>(null);
@@ -40,20 +51,12 @@ export default function LatestCarousel({
     return candidateMs > bestMs ? candidate : best;
   }, "");
   const latestFormatted = formatResultDateCompact(latestRaw || "-");
-  const headerMeta = useMemo(() => {
-    const segments: string[] = [];
-    if (dataSourceLabel && dataSourceLabel.trim()) {
-      segments.push(dataSourceLabel.trim());
-    }
-
-    segments.push(`Diperbarui ${latestFormatted}`);
-
-    if (typeof refreshIntervalSeconds === "number" && refreshIntervalSeconds > 0) {
-      segments.push(`Penyegaran ${refreshIntervalSeconds} detik`);
-    }
-
-    return segments.join(" | ");
-  }, [dataSourceLabel, latestFormatted, refreshIntervalSeconds]);
+  const latestTimeOnly = formatTimeOnly(latestRaw || "");
+  const hasRefreshInterval =
+    typeof refreshIntervalSeconds === "number" && refreshIntervalSeconds > 0;
+  const compactMeta = hasRefreshInterval
+    ? `Update ${latestTimeOnly} • ${refreshIntervalSeconds}s`
+    : `Update ${latestTimeOnly}`;
 
   const scrollByPage = (direction: "prev" | "next") => {
     const track = trackRef.current;
@@ -76,7 +79,9 @@ export default function LatestCarousel({
         <h2 style={{ fontSize: 22, margin: 0 }}>Terbaru</h2>
         <div className="carouselHeaderRight">
           <div className="carouselMetaWrap">
-            <p className="carouselMeta muted">{headerMeta}</p>
+            <p className="carouselMeta muted" title={latestFormatted} aria-label={compactMeta}>
+              {compactMeta}
+            </p>
             {isRefreshing ? (
               <p className="carouselRefreshing" role="status" aria-live="polite">
                 <span className="carouselSpinner" aria-hidden="true" />
