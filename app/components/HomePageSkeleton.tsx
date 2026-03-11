@@ -8,15 +8,18 @@ export default function HomePageSkeleton() {
         </span>
       </section>
 
-      <section className="homeSection card">
-        <div className="carouselHeader">
-          <h2 style={{ fontSize: 22, margin: 0 }}>Terbaru</h2>
-          <div className="carouselHeaderRight">
+      <section className="homeSection card homeSectionCard">
+        <div className="sectionHeader">
+          <div className="sectionTitleRow">
+            <h2 className="sectionTitle">Terbaru</h2>
+          </div>
+          <div className="sectionHeaderActions carouselHeaderRight">
             <p className="carouselMeta muted">Diperbarui: -</p>
           </div>
         </div>
+        <div className="sectionDivider" />
 
-        <div className="carouselTrack homeSkeletonTrack" aria-hidden="true">
+        <div className="sectionContent carouselTrack homeSkeletonTrack" aria-hidden="true">
           {Array.from({ length: 4 }).map((_, index) => (
             <div key={index} className="carouselCardLink">
               <article className="carouselResultCard homeSkeletonCard">
@@ -29,21 +32,31 @@ export default function HomePageSkeleton() {
         </div>
       </section>
 
-      <section className="homeSection card">
-        <div className="rowBetween poolPreviewHeader">
-          <h2 className="subTitle" style={{ margin: 0 }}>
-            Pool
-          </h2>
-          <span className="muted" style={{ fontWeight: 600 }}>
-            Lihat Semua Hasil
-          </span>
+      <section className="homeSection card homeSectionCard">
+        <div className="sectionHeader">
+          <div className="sectionTitleGroup">
+            <div className="sectionTitleRow">
+              <h2 className="sectionTitle">Pool</h2>
+            </div>
+            <p className="sectionSubtitle">
+              Lihat pool yang tersedia dan buka hasil lengkap dari halaman hasil.
+            </p>
+          </div>
+          <div className="sectionHeaderActions">
+            <span className="sectionActionLink muted">Lihat Semua Hasil</span>
+          </div>
         </div>
-        <div className="poolChipsWrap" aria-hidden="true">
+        <div className="sectionDivider" />
+        <div className="sectionContent">
+          <div className="poolChipsWrap" aria-hidden="true">
           {Array.from({ length: 6 }).map((_, index) => (
             <span key={index} className="skeleton skeletonChip" />
           ))}
+          </div>
         </div>
-        <p className="muted poolPreviewNote">Pratinjau pool tersedia.</p>
+        <div className="sectionFooter">
+          <p className="muted poolPreviewNote">Pratinjau pool tersedia.</p>
+        </div>
       </section>
     </>
   );

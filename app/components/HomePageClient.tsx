@@ -167,7 +167,7 @@ export default function HomePageClient({
         </Link>
       </section>
 
-      <section className="homeSection card">
+      <section className="homeSection card homeSectionCard">
         <LatestCarousel
           items={top}
           isRefreshing={isRefreshing}
@@ -176,31 +176,43 @@ export default function HomePageClient({
         />
       </section>
 
-      <section className="homeSection card">
-        <div className="rowBetween poolPreviewHeader">
-          <h2 className="subTitle" style={{ margin: 0 }}>
-            Pool
-          </h2>
-          <Link href="/results" className="muted" style={{ fontWeight: 600 }}>
-            Lihat Semua Hasil
-          </Link>
-        </div>
-
-        <div className="poolChipsWrap">
-          {previewPools.map((pool) => (
-            <Link
-              key={pool.label}
-              href={`/results?search=${encodeURIComponent(pool.query)}`}
-              className="poolChipLink"
-            >
-              {pool.label}
+      <section className="homeSection card homeSectionCard">
+        <div className="sectionHeader">
+          <div className="sectionTitleGroup">
+            <div className="sectionTitleRow">
+              <h2 className="sectionTitle">Pool</h2>
+            </div>
+            <p className="sectionSubtitle">
+              Lihat pool yang tersedia dan buka hasil lengkap dari halaman hasil.
+            </p>
+          </div>
+          <div className="sectionHeaderActions">
+            <Link href="/results" className="sectionActionLink">
+              Lihat Semua Hasil
             </Link>
-          ))}
+          </div>
+        </div>
+        <div className="sectionDivider" />
+
+        <div className="sectionContent">
+          <div className="poolChipsWrap">
+            {previewPools.map((pool) => (
+              <Link
+                key={pool.label}
+                href={`/results?search=${encodeURIComponent(pool.query)}`}
+                className="poolChipLink"
+              >
+                {pool.label}
+              </Link>
+            ))}
+          </div>
         </div>
 
-        <p className="muted poolPreviewNote">
-          Pratinjau pool tersedia. Lihat halaman Hasil untuk daftar lengkap dan detail.
-        </p>
+        <div className="sectionFooter">
+          <p className="muted poolPreviewNote">
+            Pratinjau pool tersedia. Lihat halaman Hasil untuk daftar lengkap dan detail.
+          </p>
+        </div>
       </section>
 
       <HomeSeoContent />

@@ -51,3 +51,22 @@ export function formatResultDateCompact(dateString: string): string {
 
   return `${day} ${month} ${year} \u2022 ${hours}:${minutes}`;
 }
+
+export function formatResultDateShort(dateString: string): string {
+  const value = dateString?.trim() ?? "";
+  if (!value || value === "-") {
+    return "-";
+  }
+
+  const parsed = parseDateLoose(value);
+  if (!parsed) {
+    return value;
+  }
+
+  const day = parsed.getDate();
+  const month = parsed.toLocaleString("en-US", { month: "short" });
+  const hours = String(parsed.getHours()).padStart(2, "0");
+  const minutes = String(parsed.getMinutes()).padStart(2, "0");
+
+  return `${day} ${month} \u2022 ${hours}:${minutes}`;
+}

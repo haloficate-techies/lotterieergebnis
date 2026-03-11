@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { formatResultDate } from "@/lib/formatDate";
+import { formatResultDateShort } from "@/lib/formatDate";
 import type { ResultsItem } from "@/lib/results";
 
 type GroupedGame = {
@@ -64,34 +64,20 @@ export default function ResultsGamesList({ games, initialQuery = "" }: ResultsGa
 
   return (
     <>
-      <div className="filtersBar card">
-        <label className="filtersField">
-          <span className="muted">Search game</span>
+      <div className="filtersBar card resultsToolbar">
+        <label className="filtersField resultsToolbarSearch">
+          <span className="resultsToolbarLabel">Cari pool</span>
           <input
             type="text"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Cari gameid..."
+            placeholder="Cari pool..."
             className="fieldInput"
           />
         </label>
 
-        <label className="filtersField">
-          <span className="muted">Urutkan</span>
-          <select
-            value={sortMode}
-            onChange={(event) => setSortMode(event.target.value as SortMode)}
-            className="fieldInput"
-          >
-            <option value="date-desc">Result date terbaru ke lama</option>
-            <option value="date-asc">Result date lama ke terbaru</option>
-            <option value="alpha-asc">Alphabet A-Z</option>
-            <option value="alpha-desc">Alphabet Z-A</option>
-          </select>
-        </label>
-
-        <label className="filtersField">
-          <span className="muted">Pool digit</span>
+        <label className="filtersField resultsToolbarField">
+          <span className="resultsToolbarLabel">Pool digit</span>
           <select
             value={digitFilter}
             onChange={(event) => setDigitFilter(event.target.value as DigitFilter)}
@@ -103,31 +89,61 @@ export default function ResultsGamesList({ games, initialQuery = "" }: ResultsGa
             <option value="5">5D</option>
           </select>
         </label>
+
+        <label className="filtersField resultsToolbarField">
+          <span className="resultsToolbarLabel">Urutkan</span>
+          <select
+            value={sortMode}
+            onChange={(event) => setSortMode(event.target.value as SortMode)}
+            className="fieldInput"
+          >
+            <option value="date-desc">Result date terbaru ke lama</option>
+            <option value="date-asc">Result date lama ke terbaru</option>
+            <option value="alpha-asc">Alphabet A-Z</option>
+            <option value="alpha-desc">Alphabet Z-A</option>
+          </select>
+        </label>
       </div>
 
       <p className="muted" style={{ marginTop: 0, marginBottom: 16 }}>
-        Menampilkan {filteredAndSortedGames.length} dari {games.length} game
+        {filteredAndSortedGames.length} pool ditemukan
       </p>
 
-      <section className="grid gridTwo">
-        {filteredAndSortedGames.map((game) => (
-          <article key={game.gameid} className="card">
-            <div className="rowBetween" style={{ marginBottom: 8 }}>
-              <h2 style={{ margin: 0, fontSize: 22 }}>{game.gameid}</h2>
-              <span className="badge">{game.latest.digits}D</span>
-            </div>
+      {filteredAndSortedGames.length === 0 ? (
+        <section className="card resultsEmptyState" aria-live="polite">
+          <h2 className="resultsEmptyTitle">Pool tidak ditemukan</h2>
+          <p className="muted resultsEmptyDescription">
+            Coba gunakan kata kunci lain atau ubah filter yang dipilih.
+          </p>
+        </section>
+      ) : (
+        <section className="resultsGamesGrid">
+          {filteredAndSortedGames.map((game) => (
+            <Link
+              key={game.gameid}
+              href={`/results/${encodeURIComponent(game.gameid)}`}
+              className="resultsGameCardLink"
+              aria-label={`Lihat detail pool ${game.gameid}`}
+            >
+              <article className="card resultsGameCard">
+                <div className="resultsGameCardHeader">
+                  <h2 className="resultsGameTitle">{game.gameid}</h2>
+                  <span className={`badge resultsGameBadge resultsGameBadge${game.latest.digits}`}>
+                    {game.latest.digits}D
+                  </span>
+                </div>
 
-            <p className="resultNumber">{game.latest.angka || "-"}</p>
-            <p className="muted" style={{ marginTop: 0, marginBottom: 10 }}>
-              Result date: {formatResultDate(game.latest.result_date || "-")}
-            </p>
+                <p className="resultNumber resultsGameNumber">{game.latest.angka || "-"}</p>
+                <p className="muted resultsGameMeta">
+                  {formatResultDateShort(game.latest.result_date || "-")}
+                </p>
 
-            <Link href={`/results/${encodeURIComponent(game.gameid)}`} className="btn btnPrimary">
-              Lihat Detail
+                <span className="btn btnSecondary resultsGameAction">Detail</span>
+              </article>
             </Link>
-          </article>
-        ))}
-      </section>
+          ))}
+        </section>
+      )}
     </>
   );
 }

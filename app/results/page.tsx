@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Shell from "@/app/components/Shell";
 import { fetchResultsFromApi } from "@/lib/api";
 import { groupByGameid } from "@/lib/results";
@@ -15,15 +14,9 @@ export default async function ResultsPage({ searchParams }: ResultsPageProps) {
 
   return (
     <Shell>
-      <div style={{ marginBottom: 12 }}>
-        <Link href="/" className="btn btnSecondary">
-          &larr; Kembali ke Homepage
-        </Link>
-      </div>
-
-      <h1 className="pageTitle">Daftar Game</h1>
+      <h1 className="pageTitle">Daftar Pool</h1>
       <p className="muted" style={{ marginTop: 0, marginBottom: 16 }}>
-        Total game: {games.length}
+        Total pool: {games.length}
       </p>
 
       <ResultsGamesList games={games} initialQuery={search ?? ""} />

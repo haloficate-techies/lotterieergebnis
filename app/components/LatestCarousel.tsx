@@ -34,7 +34,7 @@ export default function LatestCarousel({
   isRefreshing = false,
   refreshIntervalSeconds,
 }: LatestCarouselProps) {
-  const trackRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
   const latestRaw = items.reduce<string>((best, item) => {
     const candidate = item.result_date || item.effective_iso || "";
     if (!candidate) {
@@ -59,25 +59,27 @@ export default function LatestCarousel({
     : `Update ${latestTimeOnly}`;
 
   const scrollByPage = (direction: "prev" | "next") => {
-    const track = trackRef.current;
-    if (!track) {
+    const viewport = viewportRef.current;
+    if (!viewport) {
       return;
     }
 
-    const amount = Math.round(track.clientWidth * 0.9);
+    const amount = Math.round(viewport.clientWidth * 0.9);
     const left = direction === "next" ? amount : -amount;
 
-    track.scrollBy({
+    viewport.scrollBy({
       left,
       behavior: "smooth",
     });
   };
 
   return (
-    <section>
-      <div className="carouselHeader">
-        <h2 style={{ fontSize: 22, margin: 0 }}>Terbaru</h2>
-        <div className="carouselHeaderRight">
+    <>
+      <div className="sectionHeader">
+        <div className="sectionTitleRow">
+          <h2 className="sectionTitle">Terbaru</h2>
+        </div>
+        <div className="sectionHeaderActions carouselHeaderRight">
           <div className="carouselMetaWrap">
             <p className="carouselMeta muted" title={latestFormatted} aria-label={compactMeta}>
               {compactMeta}
@@ -107,55 +109,41 @@ export default function LatestCarousel({
           </button>
         </div>
       </div>
+      <div className="sectionDivider" />
 
-      <div
-        ref={trackRef}
-        className="carouselTrack"
-        style={{
-          display: "flex",
-          overflowX: "auto",
-          gap: 12,
-          scrollSnapType: "x mandatory",
-          scrollBehavior: "smooth",
-          paddingBottom: 8,
-          WebkitOverflowScrolling: "touch",
-        }}
-      >
-        {items.map((item) => {
-          const { poolName, digitFromSuffix } = parseGameidDisplay(item.gameid);
-          const digitBadge =
-            toDigitBadgeValue(item.digits) ?? toDigitBadgeValue(digitFromSuffix);
-          const resultDate = item.result_date || item.effective_iso || "-";
+      <div ref={viewportRef} className="carouselViewport">
+        <div className="carouselTrack">
+          {items.map((item) => {
+            const { poolName, digitFromSuffix } = parseGameidDisplay(item.gameid);
+            const digitBadge =
+              toDigitBadgeValue(item.digits) ?? toDigitBadgeValue(digitFromSuffix);
+            const resultDate = item.result_date || item.effective_iso || "-";
 
-          return (
-          <Link
-            key={item.id}
-            href={`/results/${encodeURIComponent(item.gameid)}`}
-            className="carouselCardLink"
-            aria-label={`Lihat detail ${poolName}`}
-          >
-            <article className="carouselResultCard">
-              <div className="carouselCardHead">
-                <p className="carouselPoolName">{poolName}</p>
-                {digitBadge ? <span className="badge carouselDigitBadge">{digitBadge}</span> : null}
-              </div>
-              <p className="carouselResultLabel muted">Hasil Terbaru</p>
-              <p
-                className="carouselResultNumber"
+            return (
+              <Link
+                key={item.id}
+                href={`/results/${encodeURIComponent(item.gameid)}`}
+                className="carouselCardLink"
+                aria-label={`Lihat detail ${poolName}`}
               >
-                {item.angka || "-"}
-              </p>
-              <p
-                className="muted carouselDate"
-                title={resultDate}
-              >
-                {formatResultDateCompact(resultDate)}
-              </p>
-            </article>
-          </Link>
-          );
-        })}
+                <article className="carouselResultCard">
+                  <div className="carouselCardHead">
+                    <p className="carouselPoolName">{poolName}</p>
+                    {digitBadge ? (
+                      <span className="badge carouselDigitBadge">{digitBadge}</span>
+                    ) : null}
+                  </div>
+                  <p className="carouselResultLabel muted">Hasil Terbaru</p>
+                  <p className="carouselResultNumber">{item.angka || "-"}</p>
+                  <p className="muted carouselDate" title={resultDate}>
+                    {formatResultDateCompact(resultDate)}
+                  </p>
+                </article>
+              </Link>
+            );
+          })}
+        </div>
       </div>
-    </section>
+    </>
   );
 }
